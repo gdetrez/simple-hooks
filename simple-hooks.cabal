@@ -44,11 +44,30 @@ cabal-version:       >=1.8
 
 executable simple-hooks
   -- .hs or .lhs file containing the Main module.
-  -- main-is:             
+  main-is: simple-hooks.hs
   
   -- Modules included in this executable, other than Main.
   -- other-modules:       
   
   -- Other library packages from which modules are imported.
-  build-depends:       base ==4.5.*
-  
+  build-depends:       base ==4.5.*, shelly, text, optparse-applicative, yaml,
+                      bytestring, containers
+
+  hs-source-dirs: src
+  ghc-options: -W
+
+test-suite spec
+  -- .hs or .lhs file containing the Main module.
+  main-is: spec.hs
+
+  -- Modules included in this test-suite, other than Main.
+  other-modules:
+    SimpleHooksSpec
+
+  type: exitcode-stdio-1.0
+
+  -- Other library packages from which modules are imported.
+  build-depends: base == 4.5.*, shelly, text, hspec, yaml, bytestring, containers
+
+  hs-source-dirs: src test
+  ghc-options: -W
