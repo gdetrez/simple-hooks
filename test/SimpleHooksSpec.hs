@@ -46,6 +46,17 @@ spec = do
         install dir True
         readfile (dir </> ".git/hooks/pre-commit")) `shouldReturn` preCommitScript
 
+    it "creates a file .simple-hooks.yml" $ example $
+      shelly $ withTmpGitDir $ \dir -> do
+          install dir False
+          cmd "test" "-f" (dir </> ".simple-hooks.yml")
+
+    it "unless there is one in the repository already" $
+      shelly (withTmpGitDir $ \dir -> do
+         writefile (dir </> ".simple-hooks.yml") "stuff"
+         install dir True
+         readfile (dir </> ".simple-hooks.yml")) `shouldReturn` "stuff"
+
   describe "isGitDir" $ do
 
     it "returns false if the path does not exists" $

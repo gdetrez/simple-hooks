@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 module SimpleHooks where
 
-import Control.Monad (liftM)
+import Control.Monad (liftM,unless)
 import Shelly
 import qualified Data.Text.Lazy as LT
 import Prelude hiding (init, FilePath)
@@ -13,11 +13,18 @@ default (LT.Text)
 main :: IO ()
 main = undefined
 
+-- TOHO: Those should be included using TH
 preCommitScript :: LT.Text
 preCommitScript = LT.unlines
   [ "#!/bin/sh"
   , ""
   , "simple-hooks pre-commit" ]
+
+exampleConfFile :: LT.Text
+exampleConfFile = LT.unlines
+  [ "pre-commit"
+  , "  - make tests"
+  , "  - jslint" ]
 
 
 -- Install the pre-commit hooks and creates a template hook file
@@ -27,13 +34,20 @@ install :: FilePath -- ^ The root of the git repository
 install dir force = do
     isGit <- isGitDir gitdir
     unless isGit $ fail "Not a git repository"
+    -- Hook script
     exists <- test_f hookFile
     if exists && not force
       then echo "There is already a pre-commit hook in this repository, use -f to ovewrite"
       else writefile hookFile preCommitScript
     cmd "chmod" "+x" hookFile
+    -- conf file
+    exists <- test_f confFile
+    unless exists $ writefile confFile exampleConfFile
   where gitdir = dir </> ".git"
         hookFile = gitdir </> "hooks/pre-commit"
+        confFile = dir </> ".simple-hooks.yml"
+
+
 
 isGitDir :: FilePath -> Sh Bool
 isGitDir d = liftM and $ sequence
