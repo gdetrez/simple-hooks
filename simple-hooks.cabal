@@ -50,7 +50,7 @@ executable simple-hooks
   -- other-modules:       
   
   -- Other library packages from which modules are imported.
-  build-depends:       base ==4.5.*, shelly, text, optparse-applicative, yaml,
+  build-depends:      base ==4.5.*, shelly, text, optparse-applicative, yaml,
                       bytestring, containers
 
   hs-source-dirs: src
@@ -67,7 +67,8 @@ test-suite spec
   type: exitcode-stdio-1.0
 
   -- Other library packages from which modules are imported.
-  build-depends: base == 4.5.*, shelly, text, hspec, yaml, bytestring, containers
+  build-depends: base == 4.5.*, shelly, text, hspec, yaml, bytestring,
+                      containers
 
   hs-source-dirs: src test
   ghc-options: -W

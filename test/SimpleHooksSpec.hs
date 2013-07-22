@@ -62,11 +62,11 @@ spec = do
   describe "pre-commit" $ do
 
     it "creates a copy of the working dir" $ example $
-      shelly $ withTmpGitDir $ \dir -> do
+      shelly (withTmpGitDir $ \dir -> do
         cd dir
         writefile "a.txt" "..."
         cmd "git" "add" "a.txt"
-        preCommit dir ["test -f a.txt"]
+        preCommit dir ["test -f a.txt"]) `shouldReturn` [True]
 
     it "doesn't add untracked files" $ example $
       shelly (withTmpGitDir $ \dir -> do
@@ -74,7 +74,15 @@ spec = do
         writefile "a.txt" "..."
         writefile "b.txt" "..."
         cmd "git" "add" "a.txt"
-        preCommit dir ["test -f b.txt"]) `shouldThrow` anyException
+        preCommit dir ["! test -f b.txt"]) `shouldReturn` [True]
+
+    it "runs all commands from the list" $ example $
+      shelly (withTmpGitDir $ \dir -> do
+        cd dir
+        writefile "a.txt" "..."
+        cmd "git" "add" "a.txt"
+        preCommit dir ["echo abc", "test -f b.txt"])
+      `shouldReturn` [True, False]
 
   describe "isGitDir" $ do
 
@@ -95,5 +103,5 @@ spec = do
 
 -- creates a temporary git directory:
 withTmpGitDir :: (FilePath -> Sh a) -> Sh a
-withTmpGitDir script =
+withTmpGitDir script = silently $
   withTmpDir $ \d -> cmd "git" "init" d >> script d

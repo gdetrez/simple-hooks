@@ -1,6 +1,10 @@
 import Options.Applicative
 
-main = execParser opts >>= print
+main :: IO ()
+main = do
+  mode <- execParser opts
+  putStrLn $ "mode: " ++ show mode
+
 
 
 data Mode = Install Bool -- ^ force

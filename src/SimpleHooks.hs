@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 module SimpleHooks where
 
-import Control.Monad (liftM,unless)
+import Control.Monad (liftM)
 import Shelly
 import qualified Data.Text.Lazy as LT
 import Prelude hiding (init, FilePath)
@@ -47,16 +47,24 @@ install dir force = do
         hookFile = gitdir </> "hooks/pre-commit"
         confFile = dir </> ".simple-hooks.yml"
 
-
 -- Run the pre-commit hooks
 preCommit :: FilePath   -- ^ The root of the git repository
           -> [LT.Text] -- ^ Commands to run
-          -> Sh ()
-preCommit dir cmds = do
-    -- withTmpDir $ \d ->
-    run_ "sh" ["-c", head cmds]
-
-
+          -> Sh [Bool]
+preCommit dir cmds = withTmpDir $ \tmpdir -> do
+    echo "Running pre-commit hooks now…"
+    cmd "git" "checkout-index" "--prefix" (tmpdir </> "") "-af"
+    cd tmpdir
+    mapM run' cmds
+  where run' cmd = errExit False $ do
+          run_ "sh" ["-c", cmd]
+          success <- lastExitCode >>= return . (== 0)
+          if success
+            then echo $ LT.unwords [ "[", pass, "]", cmd ]
+            else echo $ LT.unwords [ "[", fail, "]", cmd ]
+          return success
+        fail = "\ESC[31mFAIL\ESC[0m"
+        pass = "\ESC[32mPASS\ESC[0m"
 
 isGitDir :: FilePath -> Sh Bool
 isGitDir d = liftM and $ sequence
