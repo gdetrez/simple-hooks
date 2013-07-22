@@ -48,6 +48,15 @@ install dir force = do
         confFile = dir </> ".simple-hooks.yml"
 
 
+-- Run the pre-commit hooks
+preCommit :: FilePath   -- ^ The root of the git repository
+          -> [LT.Text] -- ^ Commands to run
+          -> Sh ()
+preCommit dir cmds = do
+    -- withTmpDir $ \d ->
+    run_ "sh" ["-c", head cmds]
+
+
 
 isGitDir :: FilePath -> Sh Bool
 isGitDir d = liftM and $ sequence

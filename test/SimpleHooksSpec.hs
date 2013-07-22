@@ -57,6 +57,25 @@ spec = do
          install dir True
          readfile (dir </> ".simple-hooks.yml")) `shouldReturn` "stuff"
 
+
+
+  describe "pre-commit" $ do
+
+    it "creates a copy of the working dir" $ example $
+      shelly $ withTmpGitDir $ \dir -> do
+        cd dir
+        writefile "a.txt" "..."
+        cmd "git" "add" "a.txt"
+        preCommit dir ["test -f a.txt"]
+
+    it "doesn't add untracked files" $ example $
+      shelly (withTmpGitDir $ \dir -> do
+        cd dir
+        writefile "a.txt" "..."
+        writefile "b.txt" "..."
+        cmd "git" "add" "a.txt"
+        preCommit dir ["test -f b.txt"]) `shouldThrow` anyException
+
   describe "isGitDir" $ do
 
     it "returns false if the path does not exists" $
